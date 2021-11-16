@@ -1,0 +1,55 @@
+# Import libraries or install packagges 
+library(tidyverse)
+library(class)
+library(caret)
+library(e1071)
+
+# Import dataset
+url <- "https://raw.githubusercontent.com/HAN-M3DM-Data-Mining/assignments/master/datasets/KNN-occupancy.csv"
+rawDF <- read.csv(url)
+
+# Checking dataset and looking at chr or num orint
+str(rawDF)
+
+# Clear dataset
+cleanDF <- rawDF[-1] #to filter out the date
+head(cleanDF)
+
+countDiag <- table(cleanDF$Occupancy) # Count number of occupancy in a table
+proportionDiag <- round(prop.table(countDiag) * 100, digits = 1) # Calculate proportions from the table that has been shown before
+
+summary(cleanDF[c("Temperature", "Light", "CO2", "HumidityRatio")]) # Summary 
+
+# Normalize function
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+
+# Function to normalize the dataset
+nCols <- dim(cleanDF)[2] # Count the amount of columns
+cleanDF_n <- sapply(1:nCols, # Normalize the dataset
+                    function(x) {
+                      normalize(cleanDF[,x])
+                    }) %>% as.data.frame()
+colnames(cleanDF_n) <- c("Temperature", "Humidity", "Light", "CO2", "HumidityRatio", "Occupancy")
+
+summary(cleanDF_n(c("Temperature", "Light", "CO2", "Humidityratio"))
+
+# Split the dataset
+trainDF_feat <- cleanDF_n[1:5700,  ] # Split the dataset into a train set of 70% capicity
+testDF_feat <- cleanDF_n[5701:8143,  ] # and a test set of 30% capicity
+
+# Split the dataset for the chosen variable as well
+trainDF_labels <- cleanDF[1:5700,  6] 
+# and also for a test set
+testDF_labels <- cleanDF[5701:8143,  6] 
+
+# Build the model
+cleanDF_test_pred <- knn(train = as.matrix(trainDF_feat), test = as.matrix(testDF_feat), cl = as.matrix(trainDF_labels), k = 21)
+head(cleanDF_test_pred)
+cat("Model predictions:", head(cleanDF_test_pred), "\n) 
+
+# Watch the results
+
+confusionMatrix(table(cleanDF_test_pred, testDF_labels, dnn = c("Prediction", "True")), positive = NULL)
+
